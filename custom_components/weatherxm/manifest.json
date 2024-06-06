@@ -1,0 +1,16 @@
+{
+  "domain": "weatherxm",
+  "name": "WeatherXM",
+  "codeowners": [
+    "@elboletaire"
+  ],
+  "version": "1.0",
+  "config_flow": true,
+  "dependencies": [],
+  "documentation": "https://www.home-assistant.io/integrations/weatherxm",
+  "homekit": {},
+  "iot_class": "cloud_polling",
+  "requirements": [],
+  "ssdp": [],
+  "zeroconf": []
+}

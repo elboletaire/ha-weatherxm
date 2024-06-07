@@ -15,21 +15,27 @@ from homeassistant.const import (
 
 from .const import DOMAIN
 
+_LOGGER = logging.getLogger(__name__)
+
+# Skip these fields as they are used in the weather entity
+WEATHER_FIELDS = {
+    "dew_point",
+    "feels_like",
+    "humidity",
+    "icon",
+    "pressure",
+    "temperature",
+    "timestamp"
+    "uv_index",
+    "wind_direction",
+    "wind_speed",
+    "wind_gust",
+}
+
 SENSOR_TYPES = {
-    "timestamp": ["Timestamp", None, "mdi:clock"],
-    "temperature": ["Temperature", UnitOfTemperature.CELSIUS, "mdi:thermometer"],
-    "humidity": ["Humidity", PERCENTAGE, "mdi:water-percent"],
-    "wind_speed": ["Wind Speed", UnitOfSpeed.METERS_PER_SECOND, "mdi:weather-windy"],
-    "wind_gust": ["Wind Gust", UnitOfSpeed.METERS_PER_SECOND, "mdi:weather-windy"],
-    "wind_direction": ["Wind Direction", "°", "mdi:compass"],
     "solar_irradiance": ["Solar Irradiance", "W/m²", "mdi:weather-sunny"],
-    "uv_index": ["UV Index", UV_INDEX, "mdi:weather-sunny-alert"],
     "precipitation": ["Precipitation", UnitOfLength.MILLIMETERS, "mdi:weather-rainy"],
-    "pressure": ["Pressure", UnitOfPressure.HPA, "mdi:gauge"],
-    "dew_point": ["Dew Point", UnitOfTemperature.CELSIUS, "mdi:thermometer"],
     "precipitation_accumulated": ["Precipitation Accumulated", UnitOfLength.MILLIMETERS, "mdi:weather-rainy"],
-    "feels_like": ["Feels Like", UnitOfTemperature.CELSIUS, "mdi:thermometer"],
-    "icon": ["Icon", None, None],  # Special handling for icon
 }
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
@@ -40,7 +46,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
     for device in devices:
         alias = device['attributes'].get('friendlyName', device['name'])
         for sensor_type, value in device['current_weather'].items():
-            if sensor_type in SENSOR_TYPES and sensor_type != "icon":
+            if sensor_type not in WEATHER_FIELDS and sensor_type in SENSOR_TYPES:
                 sensor_name, unit, icon = SENSOR_TYPES.get(sensor_type, [sensor_type, None, "mdi:alert-circle"])
                 sensors.append(WeatherXMSensor(coordinator, device['id'], alias, sensor_type, sensor_name, value, unit, icon))
 

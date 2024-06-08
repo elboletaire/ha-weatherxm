@@ -1,8 +1,6 @@
 
 # WeatherXM Home Assistant Integration
 
-## Overview
-
 WeatherXM Home Assistant integration connects WeatherXM weather stations with Home Assistant, providing real-time weather data from around the world to your home automation system.
 
 > Note: A WeatherXM account is required, but owning a device is not necessary; you can get data of any followed device.
@@ -35,7 +33,7 @@ git clone https://github.com/elboletaire/ha-weatherxm.git
 2.  Navigate to `Configuration` > `Integrations`.
 3.  Click on `Add Integration` and search for "WeatherXM".
 4.  Follow the on-screen instructions to configure the integration.
-5.  **Note:** A WeatherXM account is required, but owning a device is not necessary; you can follow WeatherXM.
+5.  **Note:** A WeatherXM account is required, but owning a device is not necessary; you can follow any WeatherXM device and they will be populating your sensors.
 
 ## Usage
 

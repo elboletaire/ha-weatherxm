@@ -1,3 +1,5 @@
 config
 custom_components/hacs
 __pycache__
+brands
+default

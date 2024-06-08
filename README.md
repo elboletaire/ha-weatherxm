@@ -9,10 +9,13 @@ WeatherXM Home Assistant integration connects WeatherXM weather stations with Ho
 
 ### HACS Installation
 
+[![Open your Home Assistant instance and open a repository inside the Home Assistant Community Store.](https://my.home-assistant.io/badges/hacs_repository.svg)](https://my.home-assistant.io/redirect/hacs_repository/?owner=elboletaire&repository=ha-weatherxm&category=integration)
+
 1.  **Add Custom Repository:**
     -   Go to HACS in Home Assistant.
     -   Click on `Integrations` > `+` > `Custom repositories`.
     -   Add `https://github.com/elboletaire/ha-weatherxm` and select `Integration`.
+
 2.  **Install the Integration:**
     -   Search for "WeatherXM" in HACS and install.
 

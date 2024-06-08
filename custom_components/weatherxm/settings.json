@@ -5,7 +5,16 @@
         "data": {
           "host": "[%key:common::config_flow::data::host%]",
           "username": "[%key:common::config_flow::data::username%]",
-          "password": "[%key:common::config_flow::data::password%]"
+          "password": "[%key:common::config_flow::data::password%]",
+          "filter_owned": "[%key:common::config_flow::data::filter_owned%]"
+        }
+      },
+      "options": {
+        "data": {
+          "host": "[%key:common::config_flow::data::host%]",
+          "username": "[%key:common::config_flow::data::username%]",
+          "password": "[%key:common::config_flow::data::password%]",
+          "filter_owned": "[%key:common::config_flow::data::filter_owned%]"
         }
       }
     },

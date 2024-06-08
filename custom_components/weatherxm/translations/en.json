@@ -10,12 +10,25 @@
       },
       "step": {
           "user": {
+            "title": "WeatherXM Options",
+            "description": "Define your WeatherXM account details.",
               "data": {
                   "host": "Host",
                   "password": "Password",
-                  "username": "Username"
+                  "username": "Username",
+                  "filter_owned": "Filter owned devices"
               }
-          }
+          },
+          "options": {
+            "title": "WeatherXM Options",
+            "description": "Adjust your settings.",
+            "data": {
+                "host": "Host",
+                "username": "Username",
+                "password": "Password",
+                "filter_owned_devices": "Filter Owned Devices"
+            }
+        }
       }
   }
 }

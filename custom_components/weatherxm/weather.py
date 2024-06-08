@@ -6,43 +6,76 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import generate_entity_id
 
 from .const import DOMAIN
-
-_LOGGER = logging.getLogger(__name__)
+from .utils import async_setup_entities_list
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
-    coordinator = hass.data[DOMAIN][entry.entry_id]
-
-    devices = coordinator.data
-
-    weather_entities = []
-    for device in devices:
-        alias = device['attributes'].get('friendlyName', device['name'])
-        weather_entities.append(
-            WeatherXMWeather(
-                coordinator,
-                generate_entity_id("weather.{}", alias, hass=hass),
-                device['id'],
-                alias, device['address'],
-                device['current_weather']
-            )
-        )
-
-    async_add_entities(weather_entities, True)
+    entities = await async_setup_entities_list(hass, entry, lambda alias, device: WeatherXMWeather(
+        coordinator=hass.data[DOMAIN][entry.entry_id],
+        entity_id=generate_entity_id("weather.{}", alias, hass=hass),
+        device_id=device['id'],
+        alias=alias,
+        address=device['address'],
+        current_weather=device['current_weather']
+    ))
+    async_add_entities(entities, True)
 
 ICON_TO_CONDITION_MAP = {
+    "blizzard": "snowy",
     "clear-day": "sunny",
     "clear-night": "clear-night",
+    "clear": "sunny",
+    "cloudy": "cloudy",
+    "cold-day": "snowy",
+    "cold-night": "clear-night",
+    "cold": "snowy",
+    "drizzle": "rainy",
+    "dust-day": "fog",
+    "dust-night": "fog",
+    "dust": "fog",
+    "flurries": "snowy",
+    "fog": "fog",
+    "freezing-drizzle": "snowy-rainy",
+    "freezing-rain": "snowy-rainy",
+    "hail": "hail",
+    "hailstorm": "hail",
+    "haze": "fog",
+    "hot-day": "sunny",
+    "hot-night": "clear-night",
+    "hot": "sunny",
+    "hurricane": "exceptional",
+    "isolated-showers": "rainy",
+    "isolated-thunderstorms": "lightning",
+    "mist": "fog",
+    "mostly-sunny": "sunny",
+    "mostlycloudy": "cloudy",
+    "overcast": "cloudy",
     "partly-cloudy-day": "partlycloudy",
     "partly-cloudy-night": "partlycloudy",
-    "cloudy": "cloudy",
+    "partlycloudy": "partlycloudy",
+    "rain-and-sleet": "snowy-rainy",
+    "rain-and-snow": "snowy-rainy",
+    "rain-showers": "rainy",
     "rain": "rainy",
-    "snow": "snowy",
+    "sand": "fog",
+    "sandstorm-day": "fog",
+    "sandstorm-night": "fog",
+    "scattered-showers": "rainy",
+    "scattered-thunderstorms": "lightning",
     "sleet": "snowy-rainy",
-    "wind": "windy",
-    "fog": "fog",
-    "hail": "hail",
-    "thunderstorm": "thunderstorm",
+    "smoke": "fog",
+    "snow-showers": "snowy",
+    "snow-thunderstorm": "snowy-rainy",
+    "snow": "snowy",
+    "sunny": "sunny",
+    "thunderstorm-with-hail": "hail",
+    "thunderstorm-with-rain": "lightning-rainy",
+    "thunderstorm-with-snow": "snowy-rainy",
+    "thunderstorm": "lightning",
+    "thunderstorms": "lightning",
     "tornado": "tornado",
+    "volcanic-ash": "fog",
+    "wind": "windy",
+    "windy-variant": "windy-variant",
 }
 
 class WeatherXMWeather(CoordinatorEntity, WeatherEntity):

@@ -13,7 +13,7 @@ from homeassistant.const import (
     UnitOfTemperature,
 )
 
-from .const import DOMAIN
+from .const import DOMAIN, CONF_FILTER_OWNED_DEVICES
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -40,15 +40,30 @@ SENSOR_TYPES = {
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]
+    filter_owned_devices = entry.data.get(CONF_FILTER_OWNED_DEVICES, True)
 
     devices = coordinator.data
     sensors = []
     for device in devices:
+        if filter_owned_devices and not device.get('relation') == 'owned':
+            continue
+
         alias = device['attributes'].get('friendlyName', device['name'])
         for sensor_type, value in device['current_weather'].items():
             if sensor_type not in WEATHER_FIELDS and sensor_type in SENSOR_TYPES:
                 sensor_name, unit, icon = SENSOR_TYPES.get(sensor_type, [sensor_type, None, "mdi:alert-circle"])
-                sensors.append(WeatherXMSensor(coordinator, device['id'], alias, sensor_type, sensor_name, value, unit, icon))
+                sensors.append(
+                    WeatherXMSensor(
+                        coordinator,
+                        device['id'],
+                        alias,
+                        sensor_type,
+                        sensor_name,
+                        value,
+                        unit,
+                        icon
+                    )
+                )
 
     async_add_entities(sensors, True)
 

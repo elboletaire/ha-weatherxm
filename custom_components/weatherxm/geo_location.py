@@ -30,7 +30,7 @@ class WeatherXMGeolocation(CoordinatorEntity, GeolocationEvent):
         self._last_activity = last_activity
         self._current_weather = current_weather
         self._attr_name = f"{alias} Location"
-        self._attr_unique_id = f"{device_id}"
+        self._attr_unique_id = f"{alias}_location"
 
     @property
     def latitude(self):

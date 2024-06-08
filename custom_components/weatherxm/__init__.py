@@ -30,7 +30,10 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     async def async_update_data():
         """Fetch data from API endpoint."""
         try:
-            return await hass.async_add_executor_job(api.get_devices)
+            devices = await hass.async_add_executor_job(api.get_devices)
+            for device in devices:
+                device['forecast'] = await hass.async_add_executor_job(api.get_forecast_data, device['id'])
+            return devices
         except Exception as err:
             raise UpdateFailed(f"Error communicating with API: {err}")
 

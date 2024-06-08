@@ -1,10 +1,18 @@
-import logging
-from homeassistant.components.weather import WeatherEntity
+from homeassistant.components.weather import (
+    WeatherEntity,
+    WeatherEntityFeature,
+    Forecast,
+)
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import generate_entity_id
-
+from homeassistant.const import (
+    UnitOfPrecipitationDepth,
+    UnitOfPressure,
+    UnitOfSpeed,
+    UnitOfTemperature,
+)
 from .const import DOMAIN
 from .utils import async_setup_entities_list
 
@@ -15,7 +23,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         device_id=device['id'],
         alias=alias,
         address=device['address'],
-        current_weather=device['current_weather']
+        current_weather=device['current_weather'],
+        forecast=device.get('forecast', [])
     ))
     async_add_entities(entities, True)
 
@@ -79,7 +88,17 @@ ICON_TO_CONDITION_MAP = {
 }
 
 class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
-    def __init__(self, coordinator, entity_id, device_id, alias, address, current_weather):
+    """ WeatherXM Weather Entity """
+
+    _attr_native_precipitation_unit = UnitOfPrecipitationDepth.MILLIMETERS
+    _attr_native_pressure_unit = UnitOfPressure.HPA
+    _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
+    _attr_supported_features = (
+        WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
+    )
+    _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
+
+    def __init__(self, coordinator, entity_id, device_id, alias, address, current_weather, forecast):
         """Initialize."""
         super().__init__(coordinator)
         self.entity_id = entity_id
@@ -87,6 +106,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         self._address = address
         self._alias = alias
         self._current_weather = current_weather
+        self._forecast = forecast
         self._attr_name = alias
         self._attr_unique_id = alias
 
@@ -185,3 +205,55 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             "wind_gust_speed": self.wind_gust_speed,
         })
         return data
+
+    @property
+    def forecast(self):
+        return {
+            "hourly": self.forecast_hourly[:24],  # Limit to 24 hourly forecasts
+            "daily": self.forecast_daily[:7],  # Limit to 7 daily forecasts
+        }
+
+    @property
+    def forecast_hourly(self):
+        forecasts = []
+        for daily in self._forecast:
+            for hourly in daily.get("hourly", []):
+                hourly_forecast = {
+                    "datetime": hourly.get("timestamp"),
+                    "temperature": hourly.get("temperature"),
+                    "precipitation": hourly.get("precipitation"),
+                    "precipitation_probability": hourly.get("precipitation_probability"),
+                    "wind_speed": hourly.get("wind_speed"),
+                    "wind_bearing": hourly.get("wind_direction"),
+                    "condition": ICON_TO_CONDITION_MAP.get(hourly.get("icon"), "unknown"),
+                }
+                forecasts.append(hourly_forecast)
+        return forecasts
+
+    @property
+    def forecast_daily(self):
+        forecasts = []
+        for daily in self._forecast:
+            day_data = daily.get("daily", {})
+            daily_forecast = {
+                "datetime": day_data.get("timestamp"),
+                "temperature": day_data.get("temperature_max"),
+                "templow": day_data.get("temperature_min"),
+                "precipitation": day_data.get("precipitation_intensity"),
+                "precipitation_probability": day_data.get("precipitation_probability"),
+                "wind_speed": day_data.get("wind_speed"),
+                "wind_bearing": day_data.get("wind_direction"),
+                "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "unknown"),
+            }
+            forecasts.append(daily_forecast)
+        return forecasts
+
+    @property
+    def state(self):
+        return self.condition
+
+    async def async_forecast_daily(self):
+        return self.forecast_daily[:7]
+
+    async def async_forecast_hourly(self):
+        return self.forecast_hourly[:24]

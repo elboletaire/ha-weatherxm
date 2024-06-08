@@ -126,6 +126,10 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("pressure")
 
     @property
+    def solar_irradiance(self):
+        return self._current_weather.get("solar_irradiance")
+
+    @property
     def temperature(self):
         return self._current_weather.get("temperature")
 
@@ -173,6 +177,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             "precipitation": self.precipitation,
             "precipitation_accumulated": self.precipitation_accumulated,
             "pressure": self.pressure,
+            "solar_irradiance": self.solar_irradiance,
             "temperature": self.temperature,
             "uv_index": self.uv_index,
             "wind_bearing": self.wind_bearing,

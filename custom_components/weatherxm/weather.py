@@ -111,7 +111,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         self._attr_unique_id = alias
 
     @property
-    def apparent_temperature(self):
+    def native_apparent_temperature(self):
         return self._current_weather.get("feels_like")
 
     @property
@@ -189,7 +189,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         """Return the state attributes."""
         data = super().state_attributes
         data.update({
-            "apparent_temperature": self.apparent_temperature,
+            "native_apparent_temperature": self.native_apparent_temperature,
             "condition": self.condition,
             "datetime": self.datetime,
             "native_dew_point": self.native_dew_point,

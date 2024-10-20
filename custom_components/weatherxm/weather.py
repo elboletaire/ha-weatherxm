@@ -134,11 +134,11 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("humidity")
 
     @property
-    def precipitation(self):
+    def native_precipitation(self):
         return self._current_weather.get("precipitation")
 
     @property
-    def precipitation_accumulated(self):
+    def native_precipitation_accumulated(self):
         return self._current_weather.get("precipitation_accumulated")
 
     @property
@@ -192,17 +192,17 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             "apparent_temperature": self.apparent_temperature,
             "condition": self.condition,
             "datetime": self.datetime,
-            "dew_point": self.dew_point,
+            "native_dew_point": self.native_dew_point,
             "humidity": self.humidity,
-            "precipitation": self.precipitation,
-            "precipitation_accumulated": self.precipitation_accumulated,
-            "pressure": self.pressure,
+            "native_precipitation": self.native_precipitation,
+            "native_precipitation_accumulated": self.native_precipitation_accumulated,
+            "native_pressure": self.native_pressure,
             "solar_irradiance": self.solar_irradiance,
-            "temperature": self.temperature,
+            "native_temperature": self.native_temperature,
             "uv_index": self.uv_index,
             "wind_bearing": self.wind_bearing,
-            "wind_speed": self.wind_speed,
-            "wind_gust_speed": self.wind_gust_speed,
+            "native_wind_speed": self.native_wind_speed,
+            "native_wind_gust_speed": self.native_wind_gust_speed,
         })
         return data
 

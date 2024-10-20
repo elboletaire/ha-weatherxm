@@ -126,7 +126,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("timestamp")
 
     @property
-    def dew_point(self):
+    def native_dew_point(self):
         return self._current_weather.get("dew_point")
 
     @property
@@ -142,7 +142,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("precipitation_accumulated")
 
     @property
-    def pressure(self):
+    def native_pressure(self):
         return self._current_weather.get("pressure")
 
     @property
@@ -150,7 +150,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("solar_irradiance")
 
     @property
-    def temperature(self):
+    def native_temperature(self):
         return self._current_weather.get("temperature")
 
     @property
@@ -162,11 +162,11 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("wind_direction")
 
     @property
-    def wind_gust_speed(self):
+    def native_wind_gust_speed(self):
         return self._current_weather.get("wind_gust")
 
     @property
-    def wind_speed(self):
+    def native_wind_speed(self):
         return self._current_weather.get("wind_speed")
 
     async def async_update(self):

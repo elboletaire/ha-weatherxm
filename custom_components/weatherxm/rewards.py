@@ -1,5 +1,11 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.components.sensor import SensorEntity
+
+from homeassistant.components.sensor import (
+    SensorDeviceClass,
+    SensorEntity,
+    SensorEntityDescription,
+    SensorStateClass,
+)
 
 class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, device_id, alias, actual_reward, total_rewards):
@@ -10,6 +16,7 @@ class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
         self._total_rewards = total_rewards
         self._attr_name = f"{alias} Rewards"
         self._attr_unique_id = f"{alias}_rewards"
+        self._attr_state_class = SensorStateClass.MEASUREMENT
 
     @property
     def state(self):
@@ -37,6 +44,7 @@ class WeatherXMTotalRewardsSensor(CoordinatorEntity, SensorEntity):
         self._total_rewards = total_rewards
         self._attr_name = f"{alias} Total Rewards"
         self._attr_unique_id = f"{alias}_total_rewards"
+        self._attr_state_class = SensorStateClass.TOTAL_INCREASING
 
     @property
     def state(self):

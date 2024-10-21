@@ -220,10 +220,10 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             for hourly in daily.get("hourly", []):
                 hourly_forecast = {
                     "datetime": hourly.get("timestamp"),
-                    "temperature": hourly.get("temperature"),
-                    "precipitation": hourly.get("precipitation"),
+                    "native_temperature": hourly.get("temperature"),
+                    "native_precipitation": hourly.get("precipitation"),
                     "precipitation_probability": hourly.get("precipitation_probability"),
-                    "wind_speed": hourly.get("wind_speed"),
+                    "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
                     "condition": ICON_TO_CONDITION_MAP.get(hourly.get("icon"), "unknown"),
                 }
@@ -237,11 +237,11 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             day_data = daily.get("daily", {})
             daily_forecast = {
                 "datetime": day_data.get("timestamp"),
-                "temperature": day_data.get("temperature_max"),
-                "templow": day_data.get("temperature_min"),
-                "precipitation": day_data.get("precipitation_intensity"),
+                "native_temperature": day_data.get("temperature_max"),
+                "native_templow": day_data.get("temperature_min"),
+                "native_precipitation": day_data.get("precipitation_intensity"),
                 "precipitation_probability": day_data.get("precipitation_probability"),
-                "wind_speed": day_data.get("wind_speed"),
+                "native_wind_speed": day_data.get("wind_speed"),
                 "wind_bearing": day_data.get("wind_direction"),
                 "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "unknown"),
             }

@@ -92,7 +92,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
 
     _attr_native_precipitation_unit = UnitOfPrecipitationDepth.MILLIMETERS
     _attr_native_pressure_unit = UnitOfPressure.HPA
-    _attr_native_wind_speed_unit = UnitOfSpeed.KILOMETERS_PER_HOUR
+    _attr_native_wind_speed_unit = UnitOfSpeed.METERS_PER_SECOND
     _attr_supported_features = (
         WeatherEntityFeature.FORECAST_DAILY | WeatherEntityFeature.FORECAST_HOURLY
     )
@@ -111,7 +111,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         self._attr_unique_id = alias
 
     @property
-    def apparent_temperature(self):
+    def native_apparent_temperature(self):
         return self._current_weather.get("feels_like")
 
     @property
@@ -126,7 +126,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("timestamp")
 
     @property
-    def dew_point(self):
+    def native_dew_point(self):
         return self._current_weather.get("dew_point")
 
     @property
@@ -134,15 +134,15 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("humidity")
 
     @property
-    def precipitation(self):
+    def native_precipitation(self):
         return self._current_weather.get("precipitation")
 
     @property
-    def precipitation_accumulated(self):
+    def native_precipitation_accumulated(self):
         return self._current_weather.get("precipitation_accumulated")
 
     @property
-    def pressure(self):
+    def native_pressure(self):
         return self._current_weather.get("pressure")
 
     @property
@@ -150,7 +150,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("solar_irradiance")
 
     @property
-    def temperature(self):
+    def native_temperature(self):
         return self._current_weather.get("temperature")
 
     @property
@@ -162,11 +162,11 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         return self._current_weather.get("wind_direction")
 
     @property
-    def wind_gust_speed(self):
+    def native_wind_gust_speed(self):
         return self._current_weather.get("wind_gust")
 
     @property
-    def wind_speed(self):
+    def native_wind_speed(self):
         return self._current_weather.get("wind_speed")
 
     async def async_update(self):
@@ -189,20 +189,20 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         """Return the state attributes."""
         data = super().state_attributes
         data.update({
-            "apparent_temperature": self.apparent_temperature,
+            "native_apparent_temperature": self.native_apparent_temperature,
             "condition": self.condition,
             "datetime": self.datetime,
-            "dew_point": self.dew_point,
+            "native_dew_point": self.native_dew_point,
             "humidity": self.humidity,
-            "precipitation": self.precipitation,
-            "precipitation_accumulated": self.precipitation_accumulated,
-            "pressure": self.pressure,
+            "native_precipitation": self.native_precipitation,
+            "native_precipitation_accumulated": self.native_precipitation_accumulated,
+            "native_pressure": self.native_pressure,
             "solar_irradiance": self.solar_irradiance,
-            "temperature": self.temperature,
+            "native_temperature": self.native_temperature,
             "uv_index": self.uv_index,
             "wind_bearing": self.wind_bearing,
-            "wind_speed": self.wind_speed,
-            "wind_gust_speed": self.wind_gust_speed,
+            "native_wind_speed": self.native_wind_speed,
+            "native_wind_gust_speed": self.native_wind_gust_speed,
         })
         return data
 
@@ -220,10 +220,10 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             for hourly in daily.get("hourly", []):
                 hourly_forecast = {
                     "datetime": hourly.get("timestamp"),
-                    "temperature": hourly.get("temperature"),
-                    "precipitation": hourly.get("precipitation"),
+                    "native_temperature": hourly.get("temperature"),
+                    "native_precipitation": hourly.get("precipitation"),
                     "precipitation_probability": hourly.get("precipitation_probability"),
-                    "wind_speed": hourly.get("wind_speed"),
+                    "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
                     "condition": ICON_TO_CONDITION_MAP.get(hourly.get("icon"), "unknown"),
                 }
@@ -237,11 +237,11 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             day_data = daily.get("daily", {})
             daily_forecast = {
                 "datetime": day_data.get("timestamp"),
-                "temperature": day_data.get("temperature_max"),
-                "templow": day_data.get("temperature_min"),
-                "precipitation": day_data.get("precipitation_intensity"),
+                "native_temperature": day_data.get("temperature_max"),
+                "native_templow": day_data.get("temperature_min"),
+                "native_precipitation": day_data.get("precipitation_intensity"),
                 "precipitation_probability": day_data.get("precipitation_probability"),
-                "wind_speed": day_data.get("wind_speed"),
+                "native_wind_speed": day_data.get("wind_speed"),
                 "wind_bearing": day_data.get("wind_direction"),
                 "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "unknown"),
             }

@@ -1,67 +1,155 @@
-import requests
-import json
+"""WeatherXM API Client."""
 import logging
-
 from datetime import datetime, timedelta
+from typing import Any
+
+import aiohttp
 
 _LOGGER = logging.getLogger(__name__)
 
-class WeatherXMAPI:
-    def __init__(self, host: str, username: str, password: str):
-        self.host = host
-        self.username = username
-        self.password = password
-        self.auth_token = None
+class WeatherXMError(Exception):
+    """Exception to indicate a WeatherXM API error."""
 
-    def authenticate(self) -> bool:
+class WeatherXMAPI:
+    """WeatherXM API Client."""
+
+    def __init__(self, host: str) -> None:
+        """Initialize the API client."""
+        self.host = host
+        self._session = aiohttp.ClientSession()
+        self._auth_token = None
+        self._refresh_token = None
+
+    async def authenticate(self, username: str, password: str) -> bool:
+        """Authenticate with WeatherXM API."""
         headers = {
             'accept': 'application/json',
             'Content-Type': 'application/json'
         }
-        payload = {'username': self.username, 'password': self.password}
+        data = {'username': username, 'password': password}
+
         try:
-            r = requests.post(f'{self.host}/api/v1/auth/login', data=json.dumps(payload), headers=headers)
-            if r.status_code == requests.codes.ok:
-                self.auth_token = r.json()['token']
-                return True
-            else:
-                _LOGGER.error("Authentication failed: %s", r.text)
-                return False
-        except requests.RequestException as e:
-            _LOGGER.error("Error during authentication: %s", e)
+            async with self._session.post(
+                f'{self.host}/api/v1/auth/login',
+                json=data,
+                headers=headers
+            ) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    self._auth_token = result['token']
+                    self._refresh_token = result['refreshToken']
+                    return True
+                else:
+                    error = await response.text()
+                    _LOGGER.error("Authentication failed: %s", error)
+                    return False
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error during authentication: %s", err)
             return False
 
-    def get_devices(self):
+    async def refresh_token(self) -> bool:
+        """Refresh the authentication token."""
+        if not self._refresh_token:
+            _LOGGER.error("No refresh token available")
+            return False
+
         headers = {
-            'Authorization': f'Bearer {self.auth_token}',
-            'accept': 'application/json'
+            'accept': 'application/json',
+            'Content-Type': 'application/json'
         }
+        data = {'refreshToken': self._refresh_token}
+
         try:
-            r = requests.get(f'{self.host}/api/v1/me/devices', headers=headers)
-            if r.status_code == requests.codes.ok:
-                return r.json()
-            else:
-                _LOGGER.error("Failed to get devices: %s", r.text)
-                return []
-        except requests.RequestException as e:
-            _LOGGER.error("Error fetching devices: %s", e)
+            async with self._session.post(
+                f'{self.host}/api/v1/auth/refresh',
+                json=data,
+                headers=headers
+            ) as response:
+                if response.status == 200:
+                    result = await response.json()
+                    self._auth_token = result['token']
+                    self._refresh_token = result['refreshToken']
+                    return True
+                else:
+                    error = await response.text()
+                    _LOGGER.error("Token refresh failed: %s", error)
+                    # Clear tokens on refresh failure
+                    self._auth_token = None
+                    self._refresh_token = None
+                    return False
+        except aiohttp.ClientError as err:
+            _LOGGER.error("Error during token refresh: %s", err)
+            return False
+
+    async def _request(self, method: str, endpoint: str, **kwargs) -> Any:
+        """Make an API request with automatic token refresh."""
+        if not self._auth_token:
+            raise WeatherXMError("Not authenticated")
+
+        headers = kwargs.pop('headers', {})
+        headers['Authorization'] = f'Bearer {self._auth_token}'
+        headers['accept'] = 'application/json'
+
+        url = f'{self.host}/api/v1/{endpoint}'
+        _LOGGER.debug("Making API request to %s", endpoint)
+
+        try:
+            async with self._session.request(
+                method,
+                url,
+                headers=headers,
+                **kwargs
+            ) as response:
+                if response.status == 401:
+                    _LOGGER.debug("Token expired, attempting refresh")
+                    # Token expired, try to refresh
+                    if await self.refresh_token():
+                        # Retry request with new token
+                        _LOGGER.debug("Token refreshed, retrying request")
+                        headers['Authorization'] = f'Bearer {self._auth_token}'
+                        async with self._session.request(
+                            method,
+                            url,
+                            headers=headers,
+                            **kwargs
+                        ) as retry_response:
+                            return await retry_response.json()
+                    else:
+                        raise WeatherXMError("Token refresh failed")
+                elif response.status == 200:
+                    _LOGGER.debug("API request successful")
+                    return await response.json()
+                else:
+                    error = await response.text()
+                    _LOGGER.error("API request failed with status %s: %s", response.status, error)
+                    raise WeatherXMError(f"API request failed: {error}")
+        except aiohttp.ClientError as err:
+            raise WeatherXMError(f"Request error: {err}")
+
+    async def get_devices(self) -> list:
+        """Get user's devices."""
+        try:
+            return await self._request('GET', 'me/devices')
+        except WeatherXMError as err:
+            _LOGGER.error("Failed to get devices: %s", err)
             return []
 
-    def get_forecast_data(self, device_id):
+    async def get_forecast_data(self, device_id: str) -> dict:
+        """Get forecast data for a device."""
         today = datetime.now().strftime('%Y-%m-%d')
         future = (datetime.now() + timedelta(days=7)).strftime('%Y-%m-%d')
-        url = f"{self.host}/api/v1/me/devices/{device_id}/forecast?fromDate={today}&toDate={future}"
-        headers = {
-            'Authorization': f'Bearer {self.auth_token}',
-            'accept': 'application/json'
-        }
+
         try:
-            response = requests.get(url, headers=headers)
-            if response.status_code == 200:
-                return response.json()
-            else:
-                _LOGGER.error("Failed to get forecast data: %s", response.text)
-                return []
-        except requests.RequestException as e:
-            _LOGGER.error("Error fetching forecast data: %s", e)
-            return []
+            return await self._request(
+                'GET',
+                f'me/devices/{device_id}/forecast',
+                params={'fromDate': today, 'toDate': future}
+            )
+        except WeatherXMError as err:
+            _LOGGER.error("Failed to get forecast data: %s", err)
+            return {}
+
+    async def close(self) -> None:
+        """Close the API client."""
+        if self._session:
+            await self._session.close()

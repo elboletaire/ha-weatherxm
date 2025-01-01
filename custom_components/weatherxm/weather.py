@@ -18,13 +18,11 @@ from .utils import async_setup_entities_list
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     entities = await async_setup_entities_list(hass, entry, lambda alias, device: WeatherXMWeather(
-        coordinator=hass.data[DOMAIN][entry.entry_id],
+        coordinator=hass.data[DOMAIN][entry.entry_id]['coordinator'],
         entity_id=generate_entity_id("weather.{}", alias, hass=hass),
         device_id=device['id'],
         alias=alias,
-        address=device['address'],
-        current_weather=device['current_weather'],
-        forecast=device.get('forecast', [])
+        address=device['address']
     ))
     async_add_entities(entities, True)
 
@@ -98,17 +96,31 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     )
     _attr_native_temperature_unit = UnitOfTemperature.CELSIUS
 
-    def __init__(self, coordinator, entity_id, device_id, alias, address, current_weather, forecast):
+    def __init__(self, coordinator, entity_id, device_id, alias, address):
         """Initialize."""
         super().__init__(coordinator)
         self.entity_id = entity_id
         self._device_id = device_id
         self._address = address
         self._alias = alias
-        self._current_weather = current_weather
-        self._forecast = forecast
         self._attr_name = alias
         self._attr_unique_id = alias
+
+    @property
+    def _current_weather(self):
+        """Get current weather from coordinator data."""
+        for device in self.coordinator.data or []:
+            if device['id'] == self._device_id:
+                return device['current_weather']
+        return {}
+
+    @property
+    def _forecast(self):
+        """Get forecast from coordinator data."""
+        for device in self.coordinator.data or []:
+            if device['id'] == self._device_id:
+                return device.get('forecast', [])
+        return []
 
     @property
     def native_apparent_temperature(self):

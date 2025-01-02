@@ -1,4 +1,5 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -6,6 +7,8 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+
+from .const import DOMAIN
 
 BATTERY_LEVEL_MAP = {
     "ok": 100.0,
@@ -70,3 +73,13 @@ class WeatherXMBatteryLevelSensor(CoordinatorEntity, SensorEntity):
         if not self._is_active:
             return "mdi:battery-alert"
         return "mdi:battery" if self._bat_state == "ok" else "mdi:battery-alert"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device_id)},
+            name=self._alias,
+            manufacturer="WeatherXM",
+            model="Weather Station",
+        )

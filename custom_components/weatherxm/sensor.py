@@ -6,6 +6,7 @@ from .utils import async_setup_entities_list
 from .battery import WeatherXMBatteryLevelSensor
 from .rewards import WeatherXMRewardsSensor, WeatherXMTotalRewardsSensor
 from .firmware import WeatherXMFirmwareSensor
+from .last_update import WeatherXMLastUpdateSensor
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
     coordinator = hass.data[DOMAIN][entry.entry_id]['coordinator']
@@ -47,3 +48,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         firmware=device['attributes']['firmware']
     ))
     async_add_entities(firmware, True)
+
+    # Last update sensors
+    last_update = await async_setup_entities_list(hass, entry, lambda alias, device: WeatherXMLastUpdateSensor(
+        coordinator=coordinator,
+        device_id=device['id'],
+        alias=alias
+    ))
+    async_add_entities(last_update, True)

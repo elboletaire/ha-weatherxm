@@ -1,4 +1,5 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.entity import DeviceInfo
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -6,6 +7,8 @@ from homeassistant.components.sensor import (
     SensorEntityDescription,
     SensorStateClass,
 )
+
+from .const import DOMAIN
 
 class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, device_id, alias, actual_reward, total_rewards):
@@ -51,6 +54,16 @@ class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
     def icon(self):
         return "mdi:currency-usd"
 
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device_id)},
+            name=self._alias,
+            manufacturer="WeatherXM",
+            model="Weather Station",
+        )
+
 class WeatherXMTotalRewardsSensor(CoordinatorEntity, SensorEntity):
     def __init__(self, coordinator, device_id, alias, total_rewards):
         super().__init__(coordinator)
@@ -87,3 +100,13 @@ class WeatherXMTotalRewardsSensor(CoordinatorEntity, SensorEntity):
     @property
     def icon(self):
         return "mdi:currency-usd"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device_id)},
+            name=self._alias,
+            manufacturer="WeatherXM",
+            model="Weather Station",
+        )

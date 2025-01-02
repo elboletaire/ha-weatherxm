@@ -6,7 +6,7 @@ from homeassistant.components.weather import (
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import generate_entity_id
+from homeassistant.helpers.entity import generate_entity_id, DeviceInfo
 from homeassistant.const import (
     UnitOfPrecipitationDepth,
     UnitOfPressure,
@@ -269,3 +269,13 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
 
     async def async_forecast_hourly(self):
         return self.forecast_hourly[:24]
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device_id)},
+            name=self._alias,
+            manufacturer="WeatherXM",
+            model="Weather Station",
+        )

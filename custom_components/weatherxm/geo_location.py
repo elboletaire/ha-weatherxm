@@ -3,7 +3,7 @@ from homeassistant.components.geo_location import GeolocationEvent
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from homeassistant.helpers.entity import generate_entity_id
+from homeassistant.helpers.entity import generate_entity_id, DeviceInfo
 
 from .const import DOMAIN
 from .utils import async_setup_entities_list
@@ -89,3 +89,13 @@ class WeatherXMGeolocation(CoordinatorEntity, GeolocationEvent):
     @property
     def icon(self):
         return "mdi:map-marker"
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device information."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self._device_id)},
+            name=self._alias,
+            manufacturer="WeatherXM",
+            model="Weather Station",
+        )

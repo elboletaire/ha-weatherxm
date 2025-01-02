@@ -8,7 +8,7 @@ from .rewards import WeatherXMRewardsSensor, WeatherXMTotalRewardsSensor
 from .firmware import WeatherXMFirmwareSensor
 
 async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = hass.data[DOMAIN][entry.entry_id]['coordinator']
 
     # Battery indicators
     batteries = await async_setup_entities_list(hass, entry, lambda alias, device: WeatherXMBatteryLevelSensor(

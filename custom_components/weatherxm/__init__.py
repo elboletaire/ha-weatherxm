@@ -23,18 +23,29 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     password = entry.data["password"]
     host = entry.data["host"]
 
-    api = WeatherXMAPI(host, username, password)
-    if not await hass.async_add_executor_job(api.authenticate):
+    api = WeatherXMAPI(host)
+    if not await api.authenticate(username, password):
         return False
 
     async def async_update_data():
         """Fetch data from API endpoint."""
         try:
-            devices = await hass.async_add_executor_job(api.get_devices)
+            _LOGGER.debug("Starting WeatherXM data update")
+            devices = await api.get_devices()
             for device in devices:
-                device['forecast'] = await hass.async_add_executor_job(api.get_forecast_data, device['id'])
+                _LOGGER.debug("Fetching forecast for device %s", device['id'])
+                device['forecast'] = await api.get_forecast_data(device['id'])
+                _LOGGER.debug(
+                    "Device %s data - Temperature: %s, Humidity: %s, Wind: %s",
+                    device['id'],
+                    device['current_weather'].get('temperature'),
+                    device['current_weather'].get('humidity'),
+                    device['current_weather'].get('wind_speed')
+                )
+            _LOGGER.debug("WeatherXM data update completed successfully")
             return devices
         except Exception as err:
+            _LOGGER.error("Error updating WeatherXM data: %s", err)
             raise UpdateFailed(f"Error communicating with API: {err}")
 
     coordinator = DataUpdateCoordinator(
@@ -42,13 +53,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         _LOGGER,
         name="weatherxm",
         update_method=async_update_data,
-        update_interval=timedelta(minutes=5),  # Adjust the update interval as needed
+        update_interval=timedelta(minutes=5),
     )
 
     await coordinator.async_config_entry_first_refresh()
 
     hass.data.setdefault(DOMAIN, {})
-    hass.data[DOMAIN][entry.entry_id] = coordinator
+    hass.data[DOMAIN][entry.entry_id] = {
+        'coordinator': coordinator,
+        'api': api
+    }
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
@@ -61,9 +75,12 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     """Unload a config entry."""
     unload_ok = await hass.config_entries.async_unload_platforms(entry, PLATFORMS)
     if unload_ok:
+        api = hass.data[DOMAIN][entry.entry_id]['api']
+        await api.close()
         hass.data[DOMAIN].pop(entry.entry_id)
 
     return unload_ok
+
 
 async def update_listener(hass: HomeAssistant, entry: ConfigEntry):
     """Handle options update."""

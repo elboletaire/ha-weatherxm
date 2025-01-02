@@ -9,7 +9,7 @@ async def async_setup_entities_list(
     entity_initializer: Callable[[str, dict[str, Any]], Any]
 ) -> list:
     """Set up entities list."""
-    coordinator = hass.data[DOMAIN][entry.entry_id]
+    coordinator = hass.data[DOMAIN][entry.entry_id]['coordinator']
     filter_owned_devices = entry.options.get(CONF_FILTER_OWNED_DEVICES, True)
 
     devices = coordinator.data

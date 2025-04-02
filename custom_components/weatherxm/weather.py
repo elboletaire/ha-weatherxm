@@ -238,6 +238,10 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                     "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
                     "condition": ICON_TO_CONDITION_MAP.get(hourly.get("icon"), "unknown"),
+                    "humidity": hourly.get("humidity"),
+                    "native_pressure": hourly.get("pressure"),
+                    "uv_index": hourly.get("uv_index"),
+                    "native_apparent_temperature": hourly.get("feels_like"),
                 }
                 forecasts.append(hourly_forecast)
         return forecasts
@@ -256,6 +260,9 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                 "native_wind_speed": day_data.get("wind_speed"),
                 "wind_bearing": day_data.get("wind_direction"),
                 "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "unknown"),
+                "humidity": day_data.get("humidity"),
+                "uv_index": day_data.get("uv_index"),
+                "native_pressure": day_data.get("pressure"),
             }
             forecasts.append(daily_forecast)
         return forecasts

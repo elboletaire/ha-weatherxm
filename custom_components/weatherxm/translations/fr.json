@@ -1,0 +1,34 @@
+{
+  "config": {
+      "abort": {
+          "already_configured": "L'appareil est déjà configuré"
+      },
+      "error": {
+          "cannot_connect": "Échec de la connexion",
+          "invalid_auth": "Authentification invalide",
+          "unknown": "Erreur inattendue"
+      },
+      "step": {
+          "user": {
+            "title": "Options WeatherXM",
+            "description": "Définissez les détails de votre compte WeatherXM.",
+              "data": {
+                  "host": "Hôte",
+                  "password": "Mot de passe",
+                  "username": "Nom d'utilisateur",
+                  "filter_owned": "Filtrer les appareils possédés"
+              }
+          },
+          "options": {
+            "title": "Options WeatherXM",
+            "description": "Ajustez vos paramètres.",
+            "data": {
+                "host": "Hôte",
+                "username": "Nom d'utilisateur",
+                "password": "Mot de passe",
+                "filter_owned_devices": "Filtrer les appareils possédés"
+            }
+        }
+      }
+  }
+}

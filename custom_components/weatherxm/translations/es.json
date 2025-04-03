@@ -11,7 +11,7 @@
       "step": {
           "user": {
             "title": "Opciones de WeatherXM",
-            "description": "Defina los detalles de su cuenta WeatherXM.",
+            "description": "Define los detalles de tu cuenta WeatherXM.",
               "data": {
                   "host": "Host",
                   "password": "Contraseña",
@@ -21,7 +21,7 @@
           },
           "options": {
             "title": "Opciones de WeatherXM",
-            "description": "Ajuste su configuración.",
+            "description": "Ajusta tu configuración.",
             "data": {
                 "host": "Host",
                 "username": "Nombre de usuario",

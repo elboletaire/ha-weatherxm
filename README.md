@@ -54,8 +54,78 @@ The integration creates the following sensors:
 - `sensor.<alias>_firmware`, with the firmware version of the device.
 - `sensor.<alias>_rewards`, with the rewards of the device (also has total_rewards as additional attribute).
 - `sensor.<alias>_total_rewards`, with the total rewards generated to date from that device.
+- `sensor.<alias>_quality_score`, with the quality of data score for the device.
+- `sensor.<alias>_network`, with the network/connectivity information.
+- `sensor.<alias>_relation`, with the device ownership relation (owned/followed).
 
 `<alias>` is the alias of the device defined via the WeatherXM app. If you have not defined an alias, the device ID will be used instead.
+
+#### Quality Score Sensor
+
+The quality score sensor provides insights into the data quality from your weather station:
+
+- **State**: Quality score (0-100)
+- **Attributes**:
+  - `quality_score`: Quality of data score
+  - `penalty_reason`: Reason for any penalties (if applicable)
+  - `last_metric_update`: Timestamp of the last metric update
+
+This sensor is useful for:
+- Monitoring data quality and reliability
+- Identifying stations with poor data quality
+- Understanding penalties affecting rewards
+
+#### Network Sensor
+
+The network sensor provides connectivity and hardware information:
+
+- **State**: Connectivity type (`wifi` or `lorawan`)
+- **Attributes**:
+  - `connectivity`: Type of network connection
+  - `weather_station_model`: Weather station model (e.g., WS1001)
+  - `gateway_model`: Gateway model (e.g., WG1200)
+  - `profile`: Network profile (e.g., Helium, WeatherXM)
+  - `bundle_name`: Internal bundle name
+  - `bundle_title`: Display name of the bundle
+  - `documentation_url`: Link to device documentation
+
+This sensor is useful for:
+- Identifying network connection type
+- Tracking hardware models and profiles
+- Accessing device documentation
+
+#### Relation Sensor
+
+The relation sensor shows your relationship with the device:
+
+- **State**: `owned` or `followed`
+- **Attributes**:
+  - `relation`: Your relationship to the device
+  - `claimed_at`: When the device was claimed (if owned)
+  - `device_id`: Unique device identifier
+  - `name`: Device name
+  - `label`: Device label
+  - `address`: Physical address
+  - `timezone`: Device timezone
+
+This sensor is useful for:
+- Distinguishing between owned and followed stations
+- Tracking device metadata and location
+- Filtering devices by ownership
+
+**Example automation:**
+```yaml
+automation:
+  - alias: "Low Quality Alert"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.my_station_quality_score
+        below: 60
+    action:
+      - service: notify.mobile_app
+        data:
+          message: "Weather station data quality is low ({{ states('sensor.my_station_quality_score') }})"
+```
 
 ## License
 

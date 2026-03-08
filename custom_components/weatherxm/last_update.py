@@ -7,6 +7,7 @@ from homeassistant.components.sensor import (
 
 from .const import DOMAIN
 
+
 class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
     """WeatherXM Last Update Sensor."""
 
@@ -25,7 +26,7 @@ class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
         if not self.coordinator.data:
             return None
         for device in self.coordinator.data:
-            if device['id'] == self._device_id:
+            if device["id"] == self._device_id:
                 return device
         return None
 
@@ -33,8 +34,8 @@ class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
     def state(self):
         """Return the state of the sensor."""
         device = self._get_device_data()
-        if device and device.get('current_weather', {}).get('timestamp'):
-            return device['current_weather']['timestamp']
+        if device and device.get("current_weather", {}).get("timestamp"):
+            return device["current_weather"]["timestamp"]
         return None
 
     @property

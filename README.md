@@ -54,8 +54,51 @@ The integration creates the following sensors:
 - `sensor.<alias>_firmware`, with the firmware version of the device.
 - `sensor.<alias>_rewards`, with the rewards of the device (also has total_rewards as additional attribute).
 - `sensor.<alias>_total_rewards`, with the total rewards generated to date from that device.
+- `sensor.<alias>_last_update`, with the timestamp of the last API update (current weather timestamp).
+- `sensor.<alias>_last_station_activity`, with the timestamp of the last weather station activity.
+- `sensor.<alias>_activity_status`, with the activity status of the weather station (active/inactive).
 
 `<alias>` is the alias of the device defined via the WeatherXM app. If you have not defined an alias, the device ID will be used instead.
+
+#### Activity Status Sensor
+
+The activity status sensor provides monitoring capabilities for your weather station:
+
+- **State**: `active` or `inactive`
+
+This sensor is useful for:
+- Monitoring station health
+- Detecting connectivity issues
+- Creating automations for inactive stations
+
+**Example automation:**
+```yaml
+automation:
+  - alias: "Weather Station Inactive Alert"
+    trigger:
+      - platform: state
+        entity_id: sensor.my_station_activity_status
+        to: "inactive"
+        for:
+          hours: 1
+    action:
+      - service: notify.mobile_app
+        data:
+          message: "Weather station has been inactive for 1 hour"
+```
+
+#### Last Station Activity Sensor
+
+The last station activity sensor tracks when the weather station last transmitted data:
+
+- **State**: Timestamp of the last weather station activity
+- **Attributes**:
+  - `last_active_at`: Timestamp of the last station connection
+
+This sensor is useful for:
+- Tracking station data freshness
+- Detecting communication delays
+- Correlating with data quality metrics
 
 ## License
 

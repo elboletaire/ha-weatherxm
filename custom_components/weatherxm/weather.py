@@ -13,8 +13,12 @@ from homeassistant.const import (
     UnitOfSpeed,
     UnitOfTemperature,
 )
+import logging
+
 from .const import DOMAIN
 from .utils import async_setup_entities_list
+
+_LOGGER = logging.getLogger(__name__)
 
 
 async def async_setup_entry(
@@ -69,6 +73,7 @@ ICON_TO_CONDITION_MAP = {
     "overcast": "cloudy",
     "overcast-day": "cloudy",
     "overcast-drizzle": "rainy",
+    "overcast-night": "cloudy",
     "partly-cloudy-day": "partlycloudy",
     "partly-cloudy-day-drizzle": "rainy",
     "partly-cloudy-night": "partlycloudy",
@@ -147,7 +152,15 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     def condition(self):
         icon = self._current_weather.get("icon")
         if icon:
-            return ICON_TO_CONDITION_MAP.get(icon, "unknown")
+            condition = ICON_TO_CONDITION_MAP.get(icon)
+            if condition is None:
+                _LOGGER.warning(
+                    "Unknown WeatherXM icon '%s' - please report this at "
+                    "https://github.com/elboletaire/ha-weatherxm/issues",
+                    icon,
+                )
+                return "partlycloudy"
+            return condition
         return None
 
     @property
@@ -259,7 +272,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                     "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
                     "condition": ICON_TO_CONDITION_MAP.get(
-                        hourly.get("icon"), "unknown"
+                        hourly.get("icon"), "partlycloudy"
                     ),
                     "humidity": hourly.get("humidity"),
                     "native_pressure": hourly.get("pressure"),
@@ -282,7 +295,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                 "precipitation_probability": day_data.get("precipitation_probability"),
                 "native_wind_speed": day_data.get("wind_speed"),
                 "wind_bearing": day_data.get("wind_direction"),
-                "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "unknown"),
+                "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "partlycloudy"),
                 "humidity": day_data.get("humidity"),
                 "uv_index": day_data.get("uv_index"),
                 "native_pressure": day_data.get("pressure"),

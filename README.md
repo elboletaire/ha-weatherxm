@@ -47,13 +47,30 @@ Once configured, you can access WeatherXM data in your Home Assistant dashboard 
 
 ### Entities
 
-The integration creates the following sensors:
+The integration creates the following entities per device:
 
-- `weather.<alias>`, with all the weather and forecast information.
-- `sensor.<alias>_battery`, with the battery level of the device.
-- `sensor.<alias>_firmware`, with the firmware version of the device.
-- `sensor.<alias>_rewards`, with the rewards of the device (also has total_rewards as additional attribute).
-- `sensor.<alias>_total_rewards`, with the total rewards generated to date from that device.
+| Entity | Description |
+| --- | --- |
+| `weather.<alias>` | Current weather condition plus hourly and daily forecast. |
+| `sensor.<alias>_battery` | Battery level of the device (`battery_state` and `is_active` as attributes). |
+| `sensor.<alias>_firmware` | Current firmware version (`assigned_version` as an attribute). |
+| `sensor.<alias>_rewards` | Current reward (`total_rewards` as an attribute). |
+| `sensor.<alias>_total_rewards` | Total rewards generated to date from that device. |
+| `sensor.<alias>_last_update` | Timestamp of the last weather observation received from the station. |
+| `sensor.<alias>_precipitation` | Current precipitation rate, in mm/h. |
+| `sensor.<alias>_daily_precipitation` | Precipitation accumulated today, in mm. |
+| `sensor.<alias>_temperature` | Current temperature. |
+| `sensor.<alias>_feels_like` | Apparent ("feels like") temperature. |
+| `sensor.<alias>_humidity` | Relative humidity. |
+| `sensor.<alias>_dew_point` | Dew point. |
+| `sensor.<alias>_wind_speed` | Wind speed. |
+| `sensor.<alias>_wind_gust` | Wind gust speed. |
+| `sensor.<alias>_wind_direction` | Wind bearing, in degrees. |
+| `sensor.<alias>_pressure` | Barometric pressure. |
+| `sensor.<alias>_uv_index` | UV index. |
+| `sensor.<alias>_solar_irradiance` | Solar irradiance, in W/m². |
+| `binary_sensor.<alias>_online` | Whether the station is currently active/online. |
+| `geo_location.<alias>_location` | Device location on the map, with the current weather data as attributes. |
 
 `<alias>` is the alias of the device defined via the WeatherXM app. If you have not defined an alias, the device ID will be used instead.
 

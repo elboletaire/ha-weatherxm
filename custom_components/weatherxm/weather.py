@@ -16,15 +16,23 @@ from homeassistant.const import (
 from .const import DOMAIN
 from .utils import async_setup_entities_list
 
-async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_entities):
-    entities = await async_setup_entities_list(hass, entry, lambda alias, device: WeatherXMWeather(
-        coordinator=hass.data[DOMAIN][entry.entry_id]['coordinator'],
-        entity_id=generate_entity_id("weather.{}", alias, hass=hass),
-        device_id=device['id'],
-        alias=alias,
-        address=device['address']
-    ))
+
+async def async_setup_entry(
+    hass: HomeAssistant, entry: ConfigEntry, async_add_entities
+):
+    entities = await async_setup_entities_list(
+        hass,
+        entry,
+        lambda alias, device: WeatherXMWeather(
+            coordinator=hass.data[DOMAIN][entry.entry_id]["coordinator"],
+            entity_id=generate_entity_id("weather.{}", alias, hass=hass),
+            device_id=device["id"],
+            alias=alias,
+            address=device["address"],
+        ),
+    )
     async_add_entities(entities, True)
+
 
 ICON_TO_CONDITION_MAP = {
     "blizzard": "snowy",
@@ -39,6 +47,8 @@ ICON_TO_CONDITION_MAP = {
     "dust-day": "fog",
     "dust-night": "fog",
     "dust": "fog",
+    "extreme-day-drizzle": "snowy-rainy",
+    "extreme-day-rain": "rainy",
     "flurries": "snowy",
     "fog": "fog",
     "freezing-drizzle": "snowy-rainy",
@@ -46,6 +56,7 @@ ICON_TO_CONDITION_MAP = {
     "hail": "hail",
     "hailstorm": "hail",
     "haze": "fog",
+    "haze-night": "fog",
     "hot-day": "sunny",
     "hot-night": "clear-night",
     "hot": "sunny",
@@ -56,8 +67,12 @@ ICON_TO_CONDITION_MAP = {
     "mostly-sunny": "sunny",
     "mostlycloudy": "cloudy",
     "overcast": "cloudy",
+    "overcast-day": "cloudy",
+    "overcast-drizzle": "rainy",
     "partly-cloudy-day": "partlycloudy",
+    "partly-cloudy-day-drizzle": "rainy",
     "partly-cloudy-night": "partlycloudy",
+    "partly-cloudy-night-drizzle": "rainy",
     "partlycloudy": "partlycloudy",
     "rain-and-sleet": "snowy-rainy",
     "rain-and-snow": "snowy-rainy",
@@ -79,14 +94,16 @@ ICON_TO_CONDITION_MAP = {
     "thunderstorm-with-snow": "snowy-rainy",
     "thunderstorm": "lightning",
     "thunderstorms": "lightning",
+    "thunderstorms-light-rain": "lightning-rainy",
     "tornado": "tornado",
     "volcanic-ash": "fog",
     "wind": "windy",
     "windy-variant": "windy-variant",
 }
 
+
 class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
-    """ WeatherXM Weather Entity """
+    """WeatherXM Weather Entity"""
 
     _attr_native_precipitation_unit = UnitOfPrecipitationDepth.MILLIMETERS
     _attr_native_pressure_unit = UnitOfPressure.HPA
@@ -110,16 +127,16 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     def _current_weather(self):
         """Get current weather from coordinator data."""
         for device in self.coordinator.data or []:
-            if device['id'] == self._device_id:
-                return device['current_weather']
+            if device["id"] == self._device_id:
+                return device["current_weather"]
         return {}
 
     @property
     def _forecast(self):
         """Get forecast from coordinator data."""
         for device in self.coordinator.data or []:
-            if device['id'] == self._device_id:
-                return device.get('forecast', [])
+            if device["id"] == self._device_id:
+                return device.get("forecast", [])
         return []
 
     @property
@@ -200,22 +217,24 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     def state_attributes(self):
         """Return the state attributes."""
         data = super().state_attributes
-        data.update({
-            "native_apparent_temperature": self.native_apparent_temperature,
-            "condition": self.condition,
-            "datetime": self.datetime,
-            "native_dew_point": self.native_dew_point,
-            "humidity": self.humidity,
-            "native_precipitation": self.native_precipitation,
-            "native_precipitation_accumulated": self.native_precipitation_accumulated,
-            "native_pressure": self.native_pressure,
-            "solar_irradiance": self.solar_irradiance,
-            "native_temperature": self.native_temperature,
-            "uv_index": self.uv_index,
-            "wind_bearing": self.wind_bearing,
-            "native_wind_speed": self.native_wind_speed,
-            "native_wind_gust_speed": self.native_wind_gust_speed,
-        })
+        data.update(
+            {
+                "native_apparent_temperature": self.native_apparent_temperature,
+                "condition": self.condition,
+                "datetime": self.datetime,
+                "native_dew_point": self.native_dew_point,
+                "humidity": self.humidity,
+                "native_precipitation": self.native_precipitation,
+                "native_precipitation_accumulated": self.native_precipitation_accumulated,
+                "native_pressure": self.native_pressure,
+                "solar_irradiance": self.solar_irradiance,
+                "native_temperature": self.native_temperature,
+                "uv_index": self.uv_index,
+                "wind_bearing": self.wind_bearing,
+                "native_wind_speed": self.native_wind_speed,
+                "native_wind_gust_speed": self.native_wind_gust_speed,
+            }
+        )
         return data
 
     @property
@@ -234,10 +253,14 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                     "datetime": hourly.get("timestamp"),
                     "native_temperature": hourly.get("temperature"),
                     "native_precipitation": hourly.get("precipitation"),
-                    "precipitation_probability": hourly.get("precipitation_probability"),
+                    "precipitation_probability": hourly.get(
+                        "precipitation_probability"
+                    ),
                     "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
-                    "condition": ICON_TO_CONDITION_MAP.get(hourly.get("icon"), "unknown"),
+                    "condition": ICON_TO_CONDITION_MAP.get(
+                        hourly.get("icon"), "unknown"
+                    ),
                     "humidity": hourly.get("humidity"),
                     "native_pressure": hourly.get("pressure"),
                     "uv_index": hourly.get("uv_index"),

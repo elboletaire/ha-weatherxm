@@ -14,9 +14,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry, async_add_e
         entity_id=generate_entity_id("geo_location.{}", alias, hass=hass),
         device_id=device['id'],
         alias=alias,
-        location=device['location'],
-        last_activity=device['attributes'].get('lastWeatherStationActivity'),
-        current_weather=device['current_weather']
+        location=device.get('location') or {},
+        last_activity=(device.get('attributes') or {}).get('lastWeatherStationActivity'),
+        current_weather=device.get('current_weather') or {}
     ))
     async_add_entities(entities, True)
 
@@ -42,19 +42,21 @@ class WeatherXMGeolocation(CoordinatorEntity, GeolocationEvent):
     def _location(self):
         """Get location from coordinator data."""
         device = self._get_device_data()
-        return device['location'] if device else {}
+        return (device.get('location') or {}) if device else {}
 
     @property
     def _last_activity(self):
         """Get last activity from coordinator data."""
         device = self._get_device_data()
-        return device['attributes'].get('lastWeatherStationActivity') if device else None
+        if not device:
+            return None
+        return (device.get('attributes') or {}).get('lastWeatherStationActivity')
 
     @property
     def _current_weather(self):
         """Get current weather from coordinator data."""
         device = self._get_device_data()
-        return device['current_weather'] if device else {}
+        return (device.get('current_weather') or {}) if device else {}
 
     @property
     def latitude(self):

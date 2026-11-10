@@ -32,7 +32,7 @@ async def async_setup_entry(
             entity_id=generate_entity_id("weather.{}", alias, hass=hass),
             device_id=device["id"],
             alias=alias,
-            address=device["address"],
+            address=device.get("address"),
         ),
     )
     async_add_entities(entities, True)
@@ -110,9 +110,16 @@ ICON_TO_CONDITION_MAP = {
 _UNKNOWN_ICONS: set[str] = set()
 
 
+def _dict_items(items):
+    """Return the dict entries of an API list, or nothing if it is not a list."""
+    if not isinstance(items, list):
+        return []
+    return [item for item in items if isinstance(item, dict)]
+
+
 def _icon_to_condition(icon):
     """Map a WeatherXM icon to a condition, warning once per unknown icon."""
-    if not icon:
+    if not icon or not isinstance(icon, str):
         return None
     condition = ICON_TO_CONDITION_MAP.get(icon)
     if condition is None and icon not in _UNKNOWN_ICONS:
@@ -151,7 +158,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         """Get current weather from coordinator data."""
         for device in self.coordinator.data or []:
             if device["id"] == self._device_id:
-                return device["current_weather"]
+                return device.get("current_weather") or {}
         return {}
 
     @property
@@ -159,7 +166,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
         """Get forecast from coordinator data."""
         for device in self.coordinator.data or []:
             if device["id"] == self._device_id:
-                return device.get("forecast", [])
+                return _dict_items(device.get("forecast"))
         return []
 
     @property
@@ -227,6 +234,8 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
 
     @property
     def name(self):
+        if not self._address:
+            return self._attr_name
         return f"{self._attr_name}, {self._address}"
 
     @property
@@ -268,7 +277,9 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     def forecast_hourly(self):
         forecasts = []
         for daily in self._forecast:
-            for hourly in daily.get("hourly", []):
+            for hourly in _dict_items(daily.get("hourly")):
+                if not hourly.get("timestamp"):
+                    continue
                 hourly_forecast = {
                     "datetime": hourly.get("timestamp"),
                     "native_temperature": hourly.get("temperature"),
@@ -291,7 +302,9 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     def forecast_daily(self):
         forecasts = []
         for daily in self._forecast:
-            day_data = daily.get("daily", {})
+            day_data = daily.get("daily")
+            if not isinstance(day_data, dict) or not day_data.get("timestamp"):
+                continue
             daily_forecast = {
                 "datetime": day_data.get("timestamp"),
                 "native_temperature": day_data.get("temperature_max"),
@@ -307,10 +320,6 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
             }
             forecasts.append(daily_forecast)
         return forecasts
-
-    @property
-    def state(self):
-        return self.condition
 
     async def async_forecast_daily(self):
         return self.forecast_daily[:7]

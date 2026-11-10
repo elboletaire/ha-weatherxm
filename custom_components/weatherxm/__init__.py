@@ -43,9 +43,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug(
                     "Device %s data - Temperature: %s, Humidity: %s, Wind: %s",
                     device['id'],
-                    device['current_weather'].get('temperature'),
-                    device['current_weather'].get('humidity'),
-                    device['current_weather'].get('wind_speed')
+                    (device.get('current_weather') or {}).get('temperature'),
+                    (device.get('current_weather') or {}).get('humidity'),
+                    (device.get('current_weather') or {}).get('wind_speed')
                 )
             _LOGGER.debug("WeatherXM data update completed successfully")
             return devices

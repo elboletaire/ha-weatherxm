@@ -4,9 +4,9 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorDeviceClass,
 )
-from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
+from .utils import parse_timestamp
 
 
 class WeatherXMLastStationActivitySensor(CoordinatorEntity, SensorEntity):
@@ -37,10 +37,7 @@ class WeatherXMLastStationActivitySensor(CoordinatorEntity, SensorEntity):
         device = self._get_device_data()
         if device:
             last_activity = (device.get("attributes") or {}).get("lastWeatherStationActivity")
-            if last_activity:
-                parsed = dt_util.parse_datetime(last_activity)
-                if parsed and parsed.tzinfo:
-                    return parsed
+            return parse_timestamp(last_activity)
         return None
 
     @property

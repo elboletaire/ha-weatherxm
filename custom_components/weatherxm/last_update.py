@@ -4,9 +4,9 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorDeviceClass,
 )
-from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
+from .utils import parse_timestamp
 
 
 class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
@@ -37,10 +37,7 @@ class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
         device = self._get_device_data()
         if device:
             timestamp = (device.get("current_weather") or {}).get("timestamp")
-            if timestamp:
-                parsed = dt_util.parse_datetime(timestamp)
-                if parsed and parsed.tzinfo:
-                    return parsed
+            return parse_timestamp(timestamp)
         return None
 
     @property

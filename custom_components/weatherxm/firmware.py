@@ -25,10 +25,10 @@ class WeatherXMFirmwareSensor(CoordinatorEntity, SensorEntity):
     def _firmware(self):
         """Get firmware data from coordinator."""
         device = self._get_device_data()
-        return device['attributes'].get('firmware', {}) if device else {}
+        return ((device.get('attributes') or {}).get('firmware') or {}) if device else {}
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the current firmware version."""
         return self._firmware.get("current")
 
@@ -51,5 +51,5 @@ class WeatherXMFirmwareSensor(CoordinatorEntity, SensorEntity):
             name=self._alias,
             manufacturer="WeatherXM",
             model="Weather Station",
-            sw_version=self.state
+            sw_version=self.native_value
         )

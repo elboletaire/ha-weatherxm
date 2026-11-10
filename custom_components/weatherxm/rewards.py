@@ -18,6 +18,7 @@ class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
         self._attr_name = f"{alias} Rewards"
         self._attr_unique_id = f"{alias}_rewards"
         self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = "WXM"
 
     def _get_device_data(self):
         """Get device data from coordinator."""
@@ -32,23 +33,19 @@ class WeatherXMRewardsSensor(CoordinatorEntity, SensorEntity):
     def _rewards_data(self):
         """Get rewards data from coordinator."""
         device = self._get_device_data()
-        return device['rewards'] if device else {}
+        return (device.get('rewards') or {}) if device else {}
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the current reward value."""
-        return self._rewards_data.get('actual_reward', 0)
+        return self._rewards_data.get('actual_reward')
 
     @property
     def extra_state_attributes(self):
         """Return the state attributes."""
         return {
-            "total_rewards": self._rewards_data.get('total_rewards', 0)
+            "total_rewards": self._rewards_data.get('total_rewards')
         }
-
-    @property
-    def unit_of_measurement(self):
-        return "WXM"
 
     @property
     def icon(self):
@@ -72,6 +69,7 @@ class WeatherXMTotalRewardsSensor(CoordinatorEntity, SensorEntity):
         self._attr_name = f"{alias} Total Rewards"
         self._attr_unique_id = f"{alias}_total_rewards"
         self._attr_state_class = SensorStateClass.TOTAL_INCREASING
+        self._attr_native_unit_of_measurement = "WXM"
 
     def _get_device_data(self):
         """Get device data from coordinator."""
@@ -86,16 +84,12 @@ class WeatherXMTotalRewardsSensor(CoordinatorEntity, SensorEntity):
     def _rewards_data(self):
         """Get rewards data from coordinator."""
         device = self._get_device_data()
-        return device['rewards'] if device else {}
+        return (device.get('rewards') or {}) if device else {}
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the total rewards value."""
-        return self._rewards_data.get('total_rewards', 0)
-
-    @property
-    def unit_of_measurement(self):
-        return "WXM"
+        return self._rewards_data.get('total_rewards')
 
     @property
     def icon(self):

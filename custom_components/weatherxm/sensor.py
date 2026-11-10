@@ -52,8 +52,8 @@ async def async_setup_entry(
             coordinator=coordinator,
             device_id=device["id"],
             alias=alias,
-            bat_state=device["bat_state"],
-            is_active=device["attributes"].get("isActive", False),
+            bat_state=device.get("bat_state"),
+            is_active=(device.get("attributes") or {}).get("isActive", False),
         ),
     )
     async_add_entities(batteries, True)
@@ -66,8 +66,8 @@ async def async_setup_entry(
             coordinator=coordinator,
             device_id=device["id"],
             alias=alias,
-            actual_reward=device["rewards"]["actual_reward"],
-            total_rewards=device["rewards"]["total_rewards"],
+            actual_reward=(device.get("rewards") or {}).get("actual_reward"),
+            total_rewards=(device.get("rewards") or {}).get("total_rewards"),
         ),
     )
     async_add_entities(rewards, True)
@@ -80,7 +80,7 @@ async def async_setup_entry(
             coordinator=coordinator,
             device_id=device["id"],
             alias=alias,
-            total_rewards=device["rewards"]["total_rewards"],
+            total_rewards=(device.get("rewards") or {}).get("total_rewards"),
         ),
     )
     async_add_entities(trewards, True)
@@ -93,7 +93,7 @@ async def async_setup_entry(
             coordinator=coordinator,
             device_id=device["id"],
             alias=alias,
-            firmware=device["attributes"]["firmware"],
+            firmware=(device.get("attributes") or {}).get("firmware"),
         ),
     )
     async_add_entities(firmware, True)

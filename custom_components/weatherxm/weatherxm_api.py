@@ -113,6 +113,13 @@ class WeatherXMAPI:
                             headers=headers,
                             **kwargs
                         ) as retry_response:
+                            if retry_response.status != 200:
+                                error = await retry_response.text()
+                                _LOGGER.error(
+                                    "API request failed with status %s: %s",
+                                    retry_response.status, error,
+                                )
+                                raise WeatherXMError(f"API request failed: {error}")
                             return await retry_response.json()
                     else:
                         raise WeatherXMError("Token refresh failed")

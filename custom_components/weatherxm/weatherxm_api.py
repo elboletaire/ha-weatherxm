@@ -1,4 +1,5 @@
 """WeatherXM API Client."""
+import asyncio
 import logging
 from datetime import datetime, timedelta
 from typing import Any
@@ -21,7 +22,11 @@ class WeatherXMAPI:
         self._refresh_token = None
 
     async def authenticate(self, username: str, password: str) -> bool:
-        """Authenticate with WeatherXM API."""
+        """Authenticate with WeatherXM API.
+
+        Returns False when the credentials are rejected; raises WeatherXMError on
+        connection failures, server errors and unexpected responses.
+        """
         headers = {
             'accept': 'application/json',
             'Content-Type': 'application/json'
@@ -36,16 +41,19 @@ class WeatherXMAPI:
             ) as response:
                 if response.status == 200:
                     result = await response.json()
-                    self._auth_token = result['token']
-                    self._refresh_token = result['refreshToken']
+                    try:
+                        token, refresh_token = result['token'], result['refreshToken']
+                    except (KeyError, TypeError) as err:
+                        raise WeatherXMError("Login response has no tokens") from err
+                    self._auth_token, self._refresh_token = token, refresh_token
                     return True
-                else:
-                    error = await response.text()
+                error = await response.text()
+                if response.status in (400, 401, 403):
                     _LOGGER.error("Authentication failed: %s", error)
                     return False
-        except aiohttp.ClientError as err:
-            _LOGGER.error("Error during authentication: %s", err)
-            return False
+                raise WeatherXMError(f"Login failed with status {response.status}: {error}")
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            raise WeatherXMError(f"Error during authentication: {err!r}") from err
 
     async def refresh_token(self) -> bool:
         """Refresh the authentication token."""
@@ -130,16 +138,12 @@ class WeatherXMAPI:
                     error = await response.text()
                     _LOGGER.error("API request failed with status %s: %s", response.status, error)
                     raise WeatherXMError(f"API request failed: {error}")
-        except aiohttp.ClientError as err:
-            raise WeatherXMError(f"Request error: {err}")
+        except (aiohttp.ClientError, asyncio.TimeoutError) as err:
+            raise WeatherXMError(f"Request error: {err!r}")
 
     async def get_devices(self) -> list:
-        """Get user's devices."""
-        try:
-            return await self._request('GET', 'me/devices')
-        except WeatherXMError as err:
-            _LOGGER.error("Failed to get devices: %s", err)
-            return []
+        """Get user's devices. Raises WeatherXMError when the request fails."""
+        return await self._request('GET', 'me/devices')
 
     async def get_forecast_data(self, device_id: str) -> dict:
         """Get forecast data for a device."""

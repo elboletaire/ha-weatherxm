@@ -8,8 +8,6 @@ from .const import DOMAIN
 class WeatherXMWeatherValueSensor(CoordinatorEntity, SensorEntity):
     """Sensor exposing a single value from a device's current_weather data."""
 
-    _attr_state_class = SensorStateClass.MEASUREMENT
-
     def __init__(
         self,
         coordinator,
@@ -20,6 +18,7 @@ class WeatherXMWeatherValueSensor(CoordinatorEntity, SensorEntity):
         device_class=None,
         native_unit_of_measurement=None,
         icon=None,
+        state_class=SensorStateClass.MEASUREMENT,
     ):
         super().__init__(coordinator)
         self._device_id = device_id
@@ -30,6 +29,7 @@ class WeatherXMWeatherValueSensor(CoordinatorEntity, SensorEntity):
         self._attr_device_class = device_class
         self._attr_native_unit_of_measurement = native_unit_of_measurement
         self._attr_icon = icon
+        self._attr_state_class = state_class
 
     def _get_device_data(self):
         """Get device data from coordinator."""
@@ -41,11 +41,11 @@ class WeatherXMWeatherValueSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the current value for this sensor's data key."""
         device = self._get_device_data()
         if device:
-            return device.get('current_weather', {}).get(self._data_key)
+            return (device.get('current_weather') or {}).get(self._data_key)
         return None
 
     @property

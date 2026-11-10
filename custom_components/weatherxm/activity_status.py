@@ -1,6 +1,7 @@
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.components.sensor import (
+    SensorDeviceClass,
     SensorEntity,
 )
 
@@ -9,6 +10,9 @@ from .const import DOMAIN
 
 class WeatherXMActivityStatusSensor(CoordinatorEntity, SensorEntity):
     """WeatherXM Activity Status Sensor."""
+
+    _attr_device_class = SensorDeviceClass.ENUM
+    _attr_options = ["active", "inactive"]
 
     def __init__(self, coordinator, device_id, alias):
         """Initialize."""
@@ -28,12 +32,12 @@ class WeatherXMActivityStatusSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         device = self._get_device_data()
         if not device:
             return None
-        return "active" if device["attributes"].get("isActive", False) else "inactive"
+        return "active" if (device.get("attributes") or {}).get("isActive", False) else "inactive"
 
     @property
     def icon(self):
@@ -41,7 +45,7 @@ class WeatherXMActivityStatusSensor(CoordinatorEntity, SensorEntity):
         device = self._get_device_data()
         if not device:
             return "mdi:help-circle"
-        if device["attributes"].get("isActive", False):
+        if (device.get("attributes") or {}).get("isActive", False):
             return "mdi:check-circle"
         return "mdi:alert-circle"
 

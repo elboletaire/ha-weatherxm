@@ -7,10 +7,11 @@ from datetime import timedelta
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from .const import DOMAIN
-from .weatherxm_api import WeatherXMAPI
+from .weatherxm_api import WeatherXMAPI, WeatherXMError
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -29,7 +30,14 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     host = entry.data["host"]
 
     api = WeatherXMAPI(host)
-    if not await api.authenticate(username, password):
+    try:
+        authenticated = await api.authenticate(username, password)
+    except WeatherXMError as err:
+        await api.close()
+        raise ConfigEntryNotReady(f"Cannot reach WeatherXM to log in: {err}") from err
+    if not authenticated:
+        await api.close()
+        _LOGGER.error("WeatherXM rejected the login, check the username and password")
         return False
 
     async def async_update_data():
@@ -43,9 +51,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 _LOGGER.debug(
                     "Device %s data - Temperature: %s, Humidity: %s, Wind: %s",
                     device['id'],
-                    device['current_weather'].get('temperature'),
-                    device['current_weather'].get('humidity'),
-                    device['current_weather'].get('wind_speed')
+                    (device.get('current_weather') or {}).get('temperature'),
+                    (device.get('current_weather') or {}).get('humidity'),
+                    (device.get('current_weather') or {}).get('wind_speed')
                 )
             _LOGGER.debug("WeatherXM data update completed successfully")
             return devices
@@ -61,7 +69,11 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         update_interval=timedelta(minutes=5),
     )
 
-    await coordinator.async_config_entry_first_refresh()
+    try:
+        await coordinator.async_config_entry_first_refresh()
+    except BaseException:
+        await api.close()
+        raise
 
     hass.data.setdefault(DOMAIN, {})
     hass.data[DOMAIN][entry.entry_id] = {

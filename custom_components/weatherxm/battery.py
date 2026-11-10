@@ -1,10 +1,10 @@
+from homeassistant.const import PERCENTAGE
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.helpers.entity import DeviceInfo
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
     SensorEntity,
-    SensorEntityDescription,
     SensorStateClass,
 )
 
@@ -23,8 +23,9 @@ class WeatherXMBatteryLevelSensor(CoordinatorEntity, SensorEntity):
         self._alias = alias
         self._attr_name = f"{alias} Battery"
         self._attr_unique_id = f"{alias}_battery"
-        self._attr_state_class = SensorDeviceClass.BATTERY
+        self._attr_device_class = SensorDeviceClass.BATTERY
         self._attr_state_class = SensorStateClass.MEASUREMENT
+        self._attr_native_unit_of_measurement = PERCENTAGE
 
     def _get_device_data(self):
         """Get device data from coordinator."""
@@ -39,25 +40,20 @@ class WeatherXMBatteryLevelSensor(CoordinatorEntity, SensorEntity):
     def _bat_state(self):
         """Get battery state from coordinator data."""
         device = self._get_device_data()
-        return device['bat_state'] if device else None
+        return device.get('bat_state') if device else None
 
     @property
     def _is_active(self):
         """Get active state from coordinator data."""
         device = self._get_device_data()
-        return device['attributes'].get('isActive', False) if device else False
+        return (device.get('attributes') or {}).get('isActive', False) if device else False
 
     @property
-    def state(self):
-        """Return the state of the sensor."""
-        if not self._is_active:
-            return BATTERY_LEVEL_MAP["off"]
-        return BATTERY_LEVEL_MAP.get(self._bat_state, 0.0)
-
-    @property
-    def unit_of_measurement(self):
-        """Return the unit of measurement."""
-        return "%"
+    def native_value(self):
+        """Return the battery level, unknown while inactive or unrecognised."""
+        if not self._is_active or self._bat_state not in BATTERY_LEVEL_MAP:
+            return None
+        return BATTERY_LEVEL_MAP[self._bat_state]
 
     @property
     def extra_state_attributes(self):

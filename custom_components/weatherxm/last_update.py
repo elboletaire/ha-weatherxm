@@ -6,6 +6,7 @@ from homeassistant.components.sensor import (
 )
 
 from .const import DOMAIN
+from .utils import parse_timestamp
 
 
 class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
@@ -31,11 +32,12 @@ class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
-        """Return the state of the sensor."""
+    def native_value(self):
+        """Return the timestamp of the last weather observation."""
         device = self._get_device_data()
-        if device and device.get("current_weather", {}).get("timestamp"):
-            return device["current_weather"]["timestamp"]
+        if device:
+            timestamp = (device.get("current_weather") or {}).get("timestamp")
+            return parse_timestamp(timestamp)
         return None
 
     @property

@@ -45,7 +45,7 @@ class WeatherXMOnlineSensor(CoordinatorEntity, BinarySensorEntity):
     def is_on(self):
         """Return True if the station is active."""
         device = self._get_device_data()
-        return device['attributes'].get('isActive', False) if device else False
+        return (device.get('attributes') or {}).get('isActive', False) if device else False
 
     @property
     def device_info(self) -> DeviceInfo:

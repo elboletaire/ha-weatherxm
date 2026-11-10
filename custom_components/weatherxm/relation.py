@@ -28,7 +28,7 @@ class WeatherXMRelationSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the state of the sensor."""
         device = self._get_device_data()
         if device:
@@ -42,7 +42,7 @@ class WeatherXMRelationSensor(CoordinatorEntity, SensorEntity):
         """Return the state attributes."""
         device = self._get_device_data()
         if device:
-            attributes = device.get("attributes", {})
+            attributes = device.get("attributes") or {}
             return {
                 "relation": device.get("relation"),
                 "claimed_at": attributes.get("claimedAt"),

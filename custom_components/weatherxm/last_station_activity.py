@@ -6,6 +6,7 @@ from homeassistant.components.sensor import (
 )
 
 from .const import DOMAIN
+from .utils import parse_timestamp
 
 
 class WeatherXMLastStationActivitySensor(CoordinatorEntity, SensorEntity):
@@ -31,13 +32,12 @@ class WeatherXMLastStationActivitySensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
-        """Return the state of the sensor."""
+    def native_value(self):
+        """Return the timestamp of the last station activity."""
         device = self._get_device_data()
         if device:
-            last_activity = device["attributes"].get("lastWeatherStationActivity")
-            if last_activity:
-                return last_activity
+            last_activity = (device.get("attributes") or {}).get("lastWeatherStationActivity")
+            return parse_timestamp(last_activity)
         return None
 
     @property
@@ -45,7 +45,7 @@ class WeatherXMLastStationActivitySensor(CoordinatorEntity, SensorEntity):
         """Return the state attributes."""
         device = self._get_device_data()
         if device:
-            return {"last_active_at": device["attributes"].get("lastActiveAt")}
+            return {"last_active_at": (device.get("attributes") or {}).get("lastActiveAt")}
         return {}
 
     @property

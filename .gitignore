@@ -3,3 +3,5 @@ custom_components/hacs
 __pycache__
 brands
 default
+.pytest_cache/
+.venv/

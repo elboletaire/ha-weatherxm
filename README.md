@@ -186,6 +186,15 @@ automation:
           message: "Weather station data quality is low ({{ states('sensor.my_station_quality_score') }})"
 ```
 
+## Development
+
+Run the test suite from the repository root with Python 3.14:
+
+```bash
+pip install -r requirements_test.txt
+pytest
+```
+
 ## License
 
 This project is licensed under the MIT License. See the [LICENSE] file for more details.

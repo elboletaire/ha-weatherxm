@@ -107,6 +107,24 @@ ICON_TO_CONDITION_MAP = {
 }
 
 
+_UNKNOWN_ICONS: set[str] = set()
+
+
+def _icon_to_condition(icon):
+    """Map a WeatherXM icon to a condition, warning once per unknown icon."""
+    if not icon:
+        return None
+    condition = ICON_TO_CONDITION_MAP.get(icon)
+    if condition is None and icon not in _UNKNOWN_ICONS:
+        _UNKNOWN_ICONS.add(icon)
+        _LOGGER.warning(
+            "Unknown WeatherXM icon '%s' - please report this at "
+            "https://github.com/elboletaire/ha-weatherxm/issues",
+            icon,
+        )
+    return condition
+
+
 class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
     """WeatherXM Weather Entity"""
 
@@ -150,18 +168,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
 
     @property
     def condition(self):
-        icon = self._current_weather.get("icon")
-        if icon:
-            condition = ICON_TO_CONDITION_MAP.get(icon)
-            if condition is None:
-                _LOGGER.warning(
-                    "Unknown WeatherXM icon '%s' - please report this at "
-                    "https://github.com/elboletaire/ha-weatherxm/issues",
-                    icon,
-                )
-                return "partlycloudy"
-            return condition
-        return None
+        return _icon_to_condition(self._current_weather.get("icon"))
 
     @property
     def datetime(self):
@@ -271,9 +278,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                     ),
                     "native_wind_speed": hourly.get("wind_speed"),
                     "wind_bearing": hourly.get("wind_direction"),
-                    "condition": ICON_TO_CONDITION_MAP.get(
-                        hourly.get("icon"), "partlycloudy"
-                    ),
+                    "condition": _icon_to_condition(hourly.get("icon")),
                     "humidity": hourly.get("humidity"),
                     "native_pressure": hourly.get("pressure"),
                     "uv_index": hourly.get("uv_index"),
@@ -295,7 +300,7 @@ class WeatherXMWeather(CoordinatorEntity, WeatherEntity):
                 "precipitation_probability": day_data.get("precipitation_probability"),
                 "native_wind_speed": day_data.get("wind_speed"),
                 "wind_bearing": day_data.get("wind_direction"),
-                "condition": ICON_TO_CONDITION_MAP.get(day_data.get("icon"), "partlycloudy"),
+                "condition": _icon_to_condition(day_data.get("icon")),
                 "humidity": day_data.get("humidity"),
                 "uv_index": day_data.get("uv_index"),
                 "native_pressure": day_data.get("pressure"),

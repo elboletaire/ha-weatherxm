@@ -70,12 +70,12 @@ The integration creates the following entities per device:
 | `sensor.<alias>_dew_point` | Dew point. |
 | `sensor.<alias>_wind_speed` | Wind speed. |
 | `sensor.<alias>_wind_gust` | Wind gust speed. |
-| `sensor.<alias>_wind_direction` | Wind bearing, in degrees. |
+| `sensor.<alias>_wind_direction` | Wind direction, in degrees. |
 | `sensor.<alias>_pressure` | Barometric pressure. |
 | `sensor.<alias>_uv_index` | UV index. |
 | `sensor.<alias>_solar_irradiance` | Solar irradiance, in W/m². |
 | `binary_sensor.<alias>_online` | Whether the station is currently active/online. |
-| `geo_location.<alias>_location` | Device location on the map, with the current weather data as attributes. |
+| `geo_location.<alias>` | Device location on the map, with the current weather data as attributes. |
 
 `<alias>` is the alias of the device defined via the WeatherXM app. If you have not defined an alias, the device ID will be used instead.
 
@@ -94,14 +94,14 @@ This sensor is useful for:
 ```yaml
 automation:
   - alias: "Weather Station Inactive Alert"
-    trigger:
-      - platform: state
+    triggers:
+      - trigger: state
         entity_id: sensor.my_station_activity_status
         to: "inactive"
         for:
           hours: 1
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app
         data:
           message: "Weather station has been inactive for 1 hour"
 ```
@@ -138,7 +138,7 @@ This sensor is useful for:
 
 The network sensor provides connectivity and hardware information:
 
-- **State**: Connectivity type (`wifi` or `lorawan`)
+- **State**: Connectivity type (`wifi`, `lorawan` or `helium`)
 - **Attributes**:
   - `connectivity`: Type of network connection
   - `weather_station_model`: Weather station model (e.g., WS1001)
@@ -176,12 +176,12 @@ This sensor is useful for:
 ```yaml
 automation:
   - alias: "Low Quality Alert"
-    trigger:
-      - platform: numeric_state
+    triggers:
+      - trigger: numeric_state
         entity_id: sensor.my_station_quality_score
         below: 60
-    action:
-      - service: notify.mobile_app
+    actions:
+      - action: notify.mobile_app
         data:
           message: "Weather station data quality is low ({{ states('sensor.my_station_quality_score') }})"
 ```

@@ -33,11 +33,11 @@ class WeatherXMPrecipitationSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the current precipitation rate."""
         device = self._get_device_data()
         if device:
-            return device.get('current_weather', {}).get('precipitation')
+            return (device.get('current_weather') or {}).get('precipitation')
         return None
 
     @property
@@ -78,11 +78,11 @@ class WeatherXMDailyPrecipitationSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
+    def native_value(self):
         """Return the accumulated precipitation for today."""
         device = self._get_device_data()
         if device:
-            return device.get('current_weather', {}).get('precipitation_accumulated')
+            return (device.get('current_weather') or {}).get('precipitation_accumulated')
         return None
 
     @property

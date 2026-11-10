@@ -4,6 +4,7 @@ from homeassistant.components.sensor import (
     SensorEntity,
     SensorDeviceClass,
 )
+from homeassistant.util import dt as dt_util
 
 from .const import DOMAIN
 
@@ -31,11 +32,15 @@ class WeatherXMLastUpdateSensor(CoordinatorEntity, SensorEntity):
         return None
 
     @property
-    def state(self):
-        """Return the state of the sensor."""
+    def native_value(self):
+        """Return the timestamp of the last weather observation."""
         device = self._get_device_data()
-        if device and device.get("current_weather", {}).get("timestamp"):
-            return device["current_weather"]["timestamp"]
+        if device:
+            timestamp = (device.get("current_weather") or {}).get("timestamp")
+            if timestamp:
+                parsed = dt_util.parse_datetime(timestamp)
+                if parsed and parsed.tzinfo:
+                    return parsed
         return None
 
     @property

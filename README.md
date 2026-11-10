@@ -57,6 +57,11 @@ The integration creates the following entities per device:
 | `sensor.<alias>_rewards` | Current reward (`total_rewards` as an attribute). |
 | `sensor.<alias>_total_rewards` | Total rewards generated to date from that device. |
 | `sensor.<alias>_last_update` | Timestamp of the last weather observation received from the station. |
+| `sensor.<alias>_last_station_activity` | Timestamp of the last weather station activity (`last_active_at` as an attribute). |
+| `sensor.<alias>_activity_status` | Activity status of the weather station (`active`/`inactive`). |
+| `sensor.<alias>_quality_score` | Quality of data score (0-100). |
+| `sensor.<alias>_network` | Network/connectivity type, with hardware details as attributes. |
+| `sensor.<alias>_relation` | Device ownership relation (`owned`/`followed`). |
 | `sensor.<alias>_precipitation` | Current precipitation rate, in mm/h. |
 | `sensor.<alias>_daily_precipitation` | Precipitation accumulated today, in mm. |
 | `sensor.<alias>_temperature` | Current temperature. |
@@ -73,6 +78,113 @@ The integration creates the following entities per device:
 | `geo_location.<alias>_location` | Device location on the map, with the current weather data as attributes. |
 
 `<alias>` is the alias of the device defined via the WeatherXM app. If you have not defined an alias, the device ID will be used instead.
+
+#### Activity Status Sensor
+
+The activity status sensor provides monitoring capabilities for your weather station:
+
+- **State**: `active` or `inactive`
+
+This sensor is useful for:
+- Monitoring station health
+- Detecting connectivity issues
+- Creating automations for inactive stations
+
+**Example automation:**
+```yaml
+automation:
+  - alias: "Weather Station Inactive Alert"
+    trigger:
+      - platform: state
+        entity_id: sensor.my_station_activity_status
+        to: "inactive"
+        for:
+          hours: 1
+    action:
+      - service: notify.mobile_app
+        data:
+          message: "Weather station has been inactive for 1 hour"
+```
+
+#### Last Station Activity Sensor
+
+The last station activity sensor tracks when the weather station last transmitted data:
+
+- **State**: Timestamp of the last weather station activity
+- **Attributes**:
+  - `last_active_at`: Timestamp of the last station connection
+
+This sensor is useful for:
+- Tracking station data freshness
+- Detecting communication delays
+- Correlating with data quality metrics
+
+#### Quality Score Sensor
+
+The quality score sensor provides insights into the data quality from your weather station:
+
+- **State**: Quality score (0-100)
+- **Attributes**:
+  - `quality_score`: Quality of data score
+  - `penalty_reason`: Reason for any penalties (if applicable)
+  - `last_metric_update`: Timestamp of the last metric update
+
+This sensor is useful for:
+- Monitoring data quality and reliability
+- Identifying stations with poor data quality
+- Understanding penalties affecting rewards
+
+#### Network Sensor
+
+The network sensor provides connectivity and hardware information:
+
+- **State**: Connectivity type (`wifi` or `lorawan`)
+- **Attributes**:
+  - `connectivity`: Type of network connection
+  - `weather_station_model`: Weather station model (e.g., WS1001)
+  - `gateway_model`: Gateway model (e.g., WG1200)
+  - `profile`: Network profile (e.g., Helium, WeatherXM)
+  - `bundle_name`: Internal bundle name
+  - `bundle_title`: Display name of the bundle
+  - `documentation_url`: Link to device documentation
+
+This sensor is useful for:
+- Identifying network connection type
+- Tracking hardware models and profiles
+- Accessing device documentation
+
+#### Relation Sensor
+
+The relation sensor shows your relationship with the device:
+
+- **State**: `owned` or `followed`
+- **Attributes**:
+  - `relation`: Your relationship to the device
+  - `claimed_at`: When the device was claimed (if owned)
+  - `device_id`: Unique device identifier
+  - `name`: Device name
+  - `label`: Device label
+  - `address`: Physical address
+  - `timezone`: Device timezone
+
+This sensor is useful for:
+- Distinguishing between owned and followed stations
+- Tracking device metadata and location
+- Filtering devices by ownership
+
+**Example automation:**
+```yaml
+automation:
+  - alias: "Low Quality Alert"
+    trigger:
+      - platform: numeric_state
+        entity_id: sensor.my_station_quality_score
+        below: 60
+    action:
+      - service: notify.mobile_app
+        data:
+          message: "Weather station data quality is low ({{ states('sensor.my_station_quality_score') }})"
+```
 
 ## License
 
